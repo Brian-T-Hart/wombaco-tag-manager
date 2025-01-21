@@ -2,7 +2,7 @@
 /*
 Plugin Name: Wombaco Tag Manager
 Description: Allows you to add a Tag Manager script to head code
-Version: 1.2
+Version: 1.2 
 Author: Brian Hart
 */
 
@@ -12,8 +12,9 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 define('WOMBACO_TM_PATH', plugin_dir_path(__FILE__));
 define('WOMBACO_TM_NAME', 'WC Tag Manager');
 define('WOMBACO_TM_SLUG', 'wombaco-tag-manager');
-define('WOMBACO_TM_CONTAINER_ID', 'wombaco-tm-container-id');
 define('WOMBACO_TM_ACTIVE', 'wombaco-tm-active');
+define('WOMBACO_TM_CONTAINER_ID', 'wombaco-tm-container-id');
+define('WOMBACO_TM_ACTIVE_VALUE', sanitize_key(get_option(WOMBACO_TM_ACTIVE)));
 define('WOMBACO_TM_CONTAINER_ID_VALUE', sanitize_text_field(get_option(WOMBACO_TM_CONTAINER_ID)));
 
 // Add Settings link to plugin
@@ -48,8 +49,8 @@ add_action('admin_menu', 'wombaco_tm_register_settings_page');
 // Register the setting
 function wombaco_tm_register_settings()
 {
-    register_setting('wombaco_tm_settings_group', WOMBACO_TM_CONTAINER_ID, 'sanitize_text_field');
-    register_setting('wombaco_tm_settings_group', WOMBACO_TM_ACTIVE, 'sanitize_Key');
+    register_setting(WOMBACO_TM_SLUG, WOMBACO_TM_CONTAINER_ID, 'sanitize_text_field');
+    register_setting(WOMBACO_TM_SLUG, WOMBACO_TM_ACTIVE, 'sanitize_Key');
 }
 add_action('admin_init', 'wombaco_tm_register_settings');
 
@@ -58,24 +59,24 @@ function wombaco_tm_settings_page()
 {
 ?>
     <div class="wrap">
-        <h1><?php echo WOMBACO_TM_NAME; ?> Settings</h1>
+        <h1 style="margin-bottom: 20px;"><?php echo WOMBACO_TM_NAME; ?> Settings</h1>
         <form method="post" action="options.php">
             <?php
-            settings_fields('wombaco_tm_settings_group');
-            do_settings_sections('wombaco_tm_settings_group');
+            settings_fields(WOMBACO_TM_SLUG);
+            do_settings_sections(WOMBACO_TM_SLUG);
             ?>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">Active</th>
                     <td>
-                        <input type="checkbox" name="<?php echo WOMBACO_TM_ACTIVE; ?>" value="1" <?php checked(1, get_option(WOMBACO_TM_ACTIVE), true); ?> />
+                        <input type="checkbox" name="<?php echo WOMBACO_TM_ACTIVE; ?>" value="1" <?php checked(1, WOMBACO_TM_ACTIVE_VALUE, true); ?> />
                         <label for="<?php echo WOMBACO_TM_ACTIVE; ?>">Check to activate the plugin</label>
                     </td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">GTM Container ID</th>
                     <td>
-                        <input type="text" name="<?php echo WOMBACO_TM_CONTAINER_ID; ?>" value="<?php echo esc_attr(get_option(WOMBACO_TM_CONTAINER_ID)); ?>" placeholder="GTM-XXXXXX" style="width: 300px;" />
+                        <input type="text" name="<?php echo WOMBACO_TM_CONTAINER_ID; ?>" value="<?php echo esc_attr(WOMBACO_TM_CONTAINER_ID_VALUE); ?>" placeholder="GTM-XXXXXX" style="width: 300px;" />
                         <label for="<?php echo WOMBACO_TM_CONTAINER_ID; ?>" style="display: block; margin-top:5px;">Enter your Tag Manager container id (GTM-XXXXXX)</label>
                     </td>
                 </tr>
@@ -86,7 +87,7 @@ function wombaco_tm_settings_page()
 <?php
 }
 
-if (get_option(WOMBACO_TM_ACTIVE) && !empty(WOMBACO_TM_CONTAINER_ID_VALUE)) {
+if (WOMBACO_TM_ACTIVE_VALUE && !empty(WOMBACO_TM_CONTAINER_ID_VALUE)) {
     // Add GTM code to the head
     add_action('wp_body_open', 'wombaco_tm_add_gtm_noscript');
 
@@ -113,7 +114,7 @@ if (get_option(WOMBACO_TM_ACTIVE) && !empty(WOMBACO_TM_CONTAINER_ID_VALUE)) {
         if (!empty(WOMBACO_TM_CONTAINER_ID_VALUE)) {
             echo "
         <!-- Google Tag Manager (noscript) -->
-        <noscript><iframe src='https://www.googletagmanager.com/ns.html?id=" . esc_attr($gtm_id) . "'
+        <noscript><iframe src='https://www.googletagmanager.com/ns.html?id=" . esc_attr(WOMBACO_TM_CONTAINER_ID_VALUE) . "'
             height='0' width='0' style='display:none;visibility:hidden'></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->\n
             ";
